@@ -1,11 +1,19 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.database import Base, SessionLocal, engine
+from app.models import TransactionDB
+
 
 app = FastAPI(
     title="Finance Tracker API",
     description="A small backend API for tracking personal finance transactions.",
     version="0.1.0",
 )
+
+
+Base.metadata.create_all(bind=engine)
 
 
 class TransactionCreate(BaseModel):
@@ -19,9 +27,17 @@ class TransactionCreate(BaseModel):
 class Transaction(TransactionCreate):
     id: int
 
+    model_config = {
+        "from_attributes": True
+    }
 
-transactions: list[Transaction] = []
-next_transaction_id = 1
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get("/")
@@ -54,32 +70,39 @@ def about_info():
 
 
 @app.post("/transactions", response_model=Transaction)
-def create_transaction(transaction: TransactionCreate):
-    global next_transaction_id
+def create_transaction(
+    transaction: TransactionCreate,
+    db: Session = Depends(get_db),
+):
+    db_transaction = TransactionDB(**transaction.model_dump())
 
-    new_transaction = Transaction(
-        id=next_transaction_id,
-        **transaction.model_dump()
-    )
+    db.add(db_transaction)
+    db.commit()
+    db.refresh(db_transaction)
 
-    transactions.append(new_transaction)
-    next_transaction_id += 1
-
-    return new_transaction
+    return db_transaction
 
 
 @app.get("/transactions", response_model=list[Transaction])
-def get_transactions():
-    return transactions
+def get_transactions(db: Session = Depends(get_db)):
+    return db.query(TransactionDB).all()
 
 
 @app.get("/transactions/{transaction_id}", response_model=Transaction)
-def get_transaction(transaction_id: int):
-    for transaction in transactions:
-        if transaction.id == transaction_id:
-            return transaction
-
-    raise HTTPException(
-        status_code=404,
-        detail="Transaction not found"
+def get_transaction(
+    transaction_id: int,
+    db: Session = Depends(get_db),
+):
+    transaction = (
+        db.query(TransactionDB)
+        .filter(TransactionDB.id == transaction_id)
+        .first()
     )
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transaction not found"
+        )
+
+    return transaction

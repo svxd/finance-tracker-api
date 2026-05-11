@@ -19,6 +19,34 @@ Small backend API project for learning FastAPI, CRUD, databases, testing and sim
 - Added transaction detail endpoint
 - Added 404 handling for missing transaction
 
+### Day 3
+
+Added SQLite database persistence with SQLAlchemy.
+
+### New files
+
+```text
+app/database.py
+app/models.py
+```
+
+### What changed
+
+- Transactions are now stored in SQLite database.
+- In-memory list storage was removed.
+- SQLAlchemy ORM model was added.
+- Database sessions are managed through FastAPI dependencies.
+
+### Database
+
+SQLite database file:
+
+```text
+finance.db
+```
+
+Transactions now persist after server restart.
+
 ## Endpoints
 
 ```text
