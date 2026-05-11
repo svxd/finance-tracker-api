@@ -4,40 +4,64 @@ Small backend API project for learning FastAPI, CRUD, databases, testing and sim
 
 ## Current status
 
-### Day 1
+The project currently supports basic transaction CRUD operations, SQLite persistence, and simple filtering.
+
+## Progress
+
+### Day 1 — FastAPI basics
 
 - FastAPI app created
-- health endpoint added
-- root endpoint added
-- version/about endpoints added
+- Root endpoint added
+- Health endpoint added
+- Version/about endpoints added
 
-### Day 2
+### Day 2 — In-memory transactions API
 
-- Added in-memory transactions API
 - Added transaction creation
 - Added transaction list endpoint
 - Added transaction detail endpoint
-- Added 404 handling for missing transaction
+- Added 404 handling for missing transactions
+- Used temporary in-memory storage
 
-### Day 3
+### Day 3 — SQLite persistence
 
-Added SQLite database persistence with SQLAlchemy.
+- Added SQLite database persistence with SQLAlchemy
+- Removed in-memory list storage
+- Added SQLAlchemy ORM model
+- Added database session management through FastAPI dependencies
 
-### New files
+New files:
 
 ```text
 app/database.py
 app/models.py
 ```
 
-### What changed
+### Day 4 — CRUD and filters
 
-- Transactions are now stored in SQLite database.
-- In-memory list storage was removed.
-- SQLAlchemy ORM model was added.
-- Database sessions are managed through FastAPI dependencies.
+- Added transaction filtering by type and category
+- Added transaction deletion
+- Added partial transaction update with PATCH
+- Added shared helper for 404 handling
 
-### Database
+Notes:
+
+- PATCH supports explicit `null` for optional fields like `note`
+- If a field is not provided in PATCH body, it is not changed
+
+## Project structure
+
+```text
+finance-tracker-api/
+  app/
+    main.py
+    database.py
+    models.py
+  requirements.txt
+  README.md
+```
+
+## Database
 
 SQLite database file:
 
@@ -45,18 +69,26 @@ SQLite database file:
 finance.db
 ```
 
-Transactions now persist after server restart.
+Transactions are stored in SQLite and persist after server restart.
+
+The local database file should not be committed to Git.
 
 ## Endpoints
 
 ```text
-GET /
-GET /health
-GET /version
-GET /about
-POST /transactions
-GET /transactions
-GET /transactions/{transaction_id}
+GET    /
+GET    /health
+GET    /version
+GET    /about
+
+POST   /transactions
+GET    /transactions
+GET    /transactions?type=expense
+GET    /transactions?category=Вело-покупки
+GET    /transactions?type=expense&category=Вело-покупки
+GET    /transactions/{transaction_id}
+PATCH  /transactions/{transaction_id}
+DELETE /transactions/{transaction_id}
 ```
 
 ## Example transaction
@@ -73,8 +105,22 @@ GET /transactions/{transaction_id}
 
 ## Run locally
 
+Create and activate virtual environment:
+
 ```bash
+python -m venv .venv
 source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Run server:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
@@ -88,6 +134,20 @@ http://127.0.0.1:8000/docs
 
 ## Notes
 
-Transactions are currently stored in memory.
+This is a learning backend project.
 
-They will be lost after server restart. Database support will be added later.
+Current focus:
+
+- FastAPI basics
+- CRUD operations
+- SQLite persistence
+- SQLAlchemy ORM
+- API validation and error handling
+
+Next planned steps:
+
+- Better validation rules
+- Cleaner project structure
+- Routers
+- Tests
+- Simple finance analytics endpoints
