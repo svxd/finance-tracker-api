@@ -49,6 +49,23 @@ Notes:
 - PATCH supports explicit `null` for optional fields like `note`
 - If a field is not provided in PATCH body, it is not changed
 
+### Day 5 — Validation and better filters
+
+- Added validation for transaction type
+- Added positive amount validation
+- Added non-empty category validation
+- Added empty PATCH protection
+- Added amount range filters
+- Added validation for amount range filters
+
+New filters:
+
+```text
+GET /transactions?min_amount=1000
+GET /transactions?max_amount=50000
+GET /transactions?min_amount=1000&max_amount=50000
+```
+
 ## Project structure
 
 ```text
@@ -89,6 +106,9 @@ GET    /transactions?type=expense&category=Вело-покупки
 GET    /transactions/{transaction_id}
 PATCH  /transactions/{transaction_id}
 DELETE /transactions/{transaction_id}
+GET    /transactions?min_amount=1000
+GET    /transactions?max_amount=50000
+GET    /transactions?min_amount=1000&max_amount=50000
 ```
 
 ## Example transaction
