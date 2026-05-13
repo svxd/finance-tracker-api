@@ -1,7 +1,9 @@
+from datetime import date as DateType
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import Base, SessionLocal, engine
@@ -22,7 +24,7 @@ TransactionType = Literal["income", "expense", "transfer"]
 
 
 class TransactionCreate(BaseModel):
-    date: str
+    date: DateType
     type: TransactionType
     category: str = Field(min_length=1)
     amount: float = Field(gt=0)
@@ -30,7 +32,7 @@ class TransactionCreate(BaseModel):
 
 
 class TransactionUpdate(BaseModel):
-    date: str | None = None
+    date: DateType | None = None
     type: TransactionType | None = None
     category: str | None = Field(default=None, min_length=1)
     amount: float | None = Field(default=None, gt=0)
@@ -151,7 +153,7 @@ def get_transaction(
     transaction_id: int,
     db: Session = Depends(get_db),
 ):
-   return get_transaction_or_404(transaction_id, db)
+    return get_transaction_or_404(transaction_id, db)
 
 
 @app.delete("/transactions/{transaction_id}")
@@ -192,3 +194,67 @@ def update_transaction(
     db.refresh(transaction)
 
     return transaction
+
+
+@app.get("/summary")
+def get_summary(
+    db: Session = Depends(get_db),
+):
+    total_income = (
+        db.query(func.sum(TransactionDB.amount))
+        .filter(TransactionDB.type == "income")
+        .scalar()
+    ) or 0
+
+    total_expenses = (
+        db.query(func.sum(TransactionDB.amount))
+        .filter(TransactionDB.type == "expense")
+        .scalar()
+    ) or 0
+
+    total_transfers = (
+        db.query(func.sum(TransactionDB.amount))
+        .filter(TransactionDB.type == "transfer")
+        .scalar()
+    ) or 0
+
+    transactions_count = (
+        db.query(func.count(TransactionDB.id))
+        .scalar()
+    ) or 0
+
+    net = total_income - total_expenses
+
+    return {
+        "total_income": total_income,
+        "total_expenses": total_expenses,
+        "total_transfers": total_transfers,
+        "net": net,
+        "transactions_count": transactions_count,
+    }
+
+
+@app.get("/summary/categories")
+def get_summary_categories(
+    db: Session = Depends(get_db),
+):
+    rows = (
+        db.query(
+            TransactionDB.category,
+            func.sum(TransactionDB.amount).label("total"),
+            func.count(TransactionDB.id).label("count"),
+        )
+        .filter(TransactionDB.type == "expense")
+        .group_by(TransactionDB.category)
+        .order_by(func.sum(TransactionDB.amount).desc())
+        .all()
+    )
+
+    return [
+        {
+            "category": row.category,
+            "total": row.total,
+            "count": row.count,
+        }
+        for row in rows
+    ]

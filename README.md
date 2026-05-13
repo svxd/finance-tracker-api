@@ -66,6 +66,23 @@ GET /transactions?max_amount=50000
 GET /transactions?min_amount=1000&max_amount=50000
 ```
 
+### Day 6 — Date validation and finance summaries
+
+- Added real date validation
+- Changed transaction date from string to date type
+- Added total finance summary endpoint
+- Added expense summary by category endpoint
+
+New endpoints:
+
+```text
+GET /summary
+GET /summary/categories
+```
+
+net = income - expenses
+transfers are not included in net because they represent internal money movement
+
 ## Project structure
 
 ```text
@@ -122,7 +139,8 @@ GET    /transactions?min_amount=1000&max_amount=50000
   "note": "Велоформа"
 }
 ```
-
+net = income - expenses
+transfers are not included in net because they represent internal money movement
 ## Run locally
 
 Create and activate virtual environment:
@@ -171,3 +189,4 @@ Next planned steps:
 - Routers
 - Tests
 - Simple finance analytics endpoints
+- 
