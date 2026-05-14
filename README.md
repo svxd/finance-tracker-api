@@ -247,3 +247,23 @@ Possible next steps:
 - Import transactions from CSV
 - Simple dashboard or frontend
 - Docker
+
+## Sprint status
+
+Backend Sprint v0.1 completed.
+
+Implemented:
+- FastAPI app
+- CRUD transactions API
+- SQLite persistence
+- SQLAlchemy ORM
+- Pydantic validation
+- Filters
+- Summary endpoints
+- Routers
+- Smoke tests
+
+Paused at:
+- Project structure is cleaned up
+- Basic smoke tests are added
+- Next possible step: test database, CRUD tests, Docker, CSV import
