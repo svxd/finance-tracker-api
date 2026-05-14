@@ -4,7 +4,7 @@ Small backend API project for learning FastAPI, CRUD, databases, testing and sim
 
 ## Current status
 
-The project currently supports basic transaction CRUD operations, SQLite persistence, and simple filtering.
+The project currently supports transaction CRUD operations, SQLite persistence, validation, filtering, finance summary endpoints, routers, and basic smoke tests.
 
 ## Progress
 
@@ -56,7 +56,7 @@ Notes:
 - Added non-empty category validation
 - Added empty PATCH protection
 - Added amount range filters
-- Added validation for amount range filters
+- Added validation for incorrect amount ranges
 
 New filters:
 
@@ -80,17 +80,48 @@ GET /summary
 GET /summary/categories
 ```
 
-net = income - expenses
-transfers are not included in net because they represent internal money movement
+Notes:
+
+- `net = income - expenses`
+- Transfers are not included in net because they represent internal money movement
+
+### Day 7 — Project structure and smoke tests
+
+- Split endpoints into routers
+- Moved Pydantic schemas to `schemas.py`
+- Moved database dependency to `dependencies.py`
+- Cleaned up `main.py`
+- Added first smoke tests with pytest
+
+New files:
+
+```text
+app/schemas.py
+app/dependencies.py
+app/routers/system.py
+app/routers/transactions.py
+app/routers/summary.py
+tests/test_system.py
+```
 
 ## Project structure
 
 ```text
 finance-tracker-api/
   app/
+    __init__.py
     main.py
     database.py
+    dependencies.py
     models.py
+    schemas.py
+    routers/
+      __init__.py
+      system.py
+      transactions.py
+      summary.py
+  tests/
+    test_system.py
   requirements.txt
   README.md
 ```
@@ -109,23 +140,41 @@ The local database file should not be committed to Git.
 
 ## Endpoints
 
+### System
+
 ```text
 GET    /
 GET    /health
 GET    /version
 GET    /about
+```
 
+### Transactions
+
+```text
 POST   /transactions
 GET    /transactions
-GET    /transactions?type=expense
-GET    /transactions?category=Вело-покупки
-GET    /transactions?type=expense&category=Вело-покупки
 GET    /transactions/{transaction_id}
 PATCH  /transactions/{transaction_id}
 DELETE /transactions/{transaction_id}
-GET    /transactions?min_amount=1000
-GET    /transactions?max_amount=50000
-GET    /transactions?min_amount=1000&max_amount=50000
+```
+
+### Transaction filters
+
+```text
+GET /transactions?type=expense
+GET /transactions?category=Вело-покупки
+GET /transactions?type=expense&category=Вело-покупки
+GET /transactions?min_amount=1000
+GET /transactions?max_amount=50000
+GET /transactions?min_amount=1000&max_amount=50000
+```
+
+### Summary
+
+```text
+GET /summary
+GET /summary/categories
 ```
 
 ## Example transaction
@@ -139,8 +188,7 @@ GET    /transactions?min_amount=1000&max_amount=50000
   "note": "Велоформа"
 }
 ```
-net = income - expenses
-transfers are not included in net because they represent internal money movement
+
 ## Run locally
 
 Create and activate virtual environment:
@@ -170,6 +218,12 @@ After running the server, open:
 http://127.0.0.1:8000/docs
 ```
 
+## Run tests
+
+```bash
+pytest
+```
+
 ## Notes
 
 This is a learning backend project.
@@ -181,12 +235,15 @@ Current focus:
 - SQLite persistence
 - SQLAlchemy ORM
 - API validation and error handling
+- Project structure
+- Basic smoke tests
 
-Next planned steps:
+Possible next steps:
 
-- Better validation rules
-- Cleaner project structure
-- Routers
-- Tests
-- Simple finance analytics endpoints
-- 
+- Test database setup
+- Tests for transaction endpoints
+- SQLAlchemy query cleanup
+- Pagination and sorting
+- Import transactions from CSV
+- Simple dashboard or frontend
+- Docker
